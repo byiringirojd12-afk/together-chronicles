@@ -181,6 +181,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_couple: {
+        Args: { _anniversary: string; _name: string }
+        Returns: string
+      }
+      pair_with_code: { Args: { _code: string }; Returns: string }
       user_couple_id: { Args: { _user: string }; Returns: string }
     }
     Enums: {
