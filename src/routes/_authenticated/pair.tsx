@@ -44,7 +44,10 @@ function PairPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
-      const { error } = await supabase.rpc("create_couple", { _name: "Us", _anniversary: anniversary || null });
+      const { error } = await supabase.rpc("create_couple", {
+        _name: "Us",
+        _anniversary: anniversary || (null as unknown as string),
+      });
       if (error) throw error;
       toast.success("Your space is ready. Share your code with your partner.");
       await qc.invalidateQueries();
