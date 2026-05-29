@@ -14,13 +14,174 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      couples: {
+        Row: {
+          anniversary_date: string | null
+          created_at: string
+          id: string
+          name: string | null
+        }
+        Insert: {
+          anniversary_date?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Update: {
+          anniversary_date?: string | null
+          created_at?: string
+          id?: string
+          name?: string | null
+        }
+        Relationships: []
+      }
+      memories: {
+        Row: {
+          caption: string | null
+          couple_id: string
+          created_at: string
+          id: string
+          image_url: string
+          memory_date: string
+          title: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          caption?: string | null
+          couple_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          memory_date?: string
+          title?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          caption?: string | null
+          couple_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          memory_date?: string
+          title?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memories_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          couple_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          couple_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          couple_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_couple_id_fkey"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          couple_id: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          invite_code: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          couple_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          id: string
+          invite_code?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          couple_id?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          invite_code?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_couple_fk"
+            columns: ["couple_id"]
+            isOneToOne: false
+            referencedRelation: "couples"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      user_couple_id: { Args: { _user: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
