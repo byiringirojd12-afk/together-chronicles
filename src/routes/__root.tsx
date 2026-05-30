@@ -7,9 +7,11 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingScreen } from "@/components/loading-screen";
+import { useServiceWorker } from "@/hooks/use-pwa";
 
 import appCss from "../styles.css?url";
 
@@ -74,7 +76,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#f7f1e6" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "apple-mobile-web-app-title", content: "Together+" },
       { title: "Together+ — A sanctuary for two" },
       { name: "description", content: "Together+ helps couples share memories, chat in real-time, and grow together — beautifully." },
       { name: "author", content: "Together+" },
@@ -87,6 +93,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/icon-512.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/icon-512.png" },
       {
         rel: "stylesheet",
         href: appCss,
@@ -115,14 +124,22 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [splashDone, setSplashDone] = useState(false);
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync />
+      <PwaRegister />
+      {!splashDone && <LoadingScreen onDone={() => setSplashDone(true)} />}
       <Outlet />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
+}
+
+function PwaRegister() {
+  useServiceWorker();
+  return null;
 }
 
 function AuthSync() {
