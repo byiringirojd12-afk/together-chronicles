@@ -108,6 +108,39 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          daily_motivation_enabled: boolean
+          in_app_enabled: boolean
+          push_enabled: boolean
+          reminders_enabled: boolean
+          timezone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          daily_motivation_enabled?: boolean
+          in_app_enabled?: boolean
+          push_enabled?: boolean
+          reminders_enabled?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          daily_motivation_enabled?: boolean
+          in_app_enabled?: boolean
+          push_enabled?: boolean
+          reminders_enabled?: boolean
+          timezone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -175,6 +208,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          id: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          active: boolean
+          body: string | null
+          couple_id: string
+          created_at: string
+          created_by: string
+          due_at: string
+          id: string
+          last_fired_at: string | null
+          recurrence: string
+          reminder_type: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          body?: string | null
+          couple_id: string
+          created_at?: string
+          created_by: string
+          due_at: string
+          id?: string
+          last_fired_at?: string | null
+          recurrence?: string
+          reminder_type?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          body?: string | null
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          due_at?: string
+          id?: string
+          last_fired_at?: string | null
+          recurrence?: string
+          reminder_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo } from "react";
-import { Heart, MessageCircle, Image as ImageIcon, Calendar, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Heart, MessageCircle, Image as ImageIcon, Calendar, Sparkles, Bell } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile, useCouple, usePartner } from "@/hooks/use-profile";
+import { useReminders } from "@/hooks/use-notifications";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Home — Together+" }] }),
@@ -27,6 +31,33 @@ function Dashboard() {
   const { data: profile } = useProfile();
   const { data: couple } = useCouple(profile?.couple_id);
   const { data: partner } = usePartner(profile?.couple_id, user?.id);
+  const { data: reminders } = useReminders();
+  const coupleId = profile?.couple_id ?? null;
+  const qc = useQueryClient();
+
+  const counts = useQuery({
+    queryKey: ["dashboard-counts", coupleId],
+    enabled: !!coupleId,
+    queryFn: async () => {
+      const [mem, msg] = await Promise.all([
+        supabase.from("memories").select("*", { count: "exact", head: true }).eq("couple_id", coupleId!),
+        supabase.from("messages").select("*", { count: "exact", head: true }).eq("couple_id", coupleId!),
+      ]);
+      return { memories: mem.count ?? 0, messages: msg.count ?? 0 };
+    },
+  });
+
+  useEffect(() => {
+    if (!coupleId) return;
+    const ch = supabase
+      .channel(`dashboard:${coupleId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "memories", filter: `couple_id=eq.${coupleId}` },
+        () => qc.invalidateQueries({ queryKey: ["dashboard-counts", coupleId] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `couple_id=eq.${coupleId}` },
+        () => qc.invalidateQueries({ queryKey: ["dashboard-counts", coupleId] }))
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [coupleId, qc]);
 
   const motivation = useMemo(() => motivations[new Date().getDate() % motivations.length], []);
   const greeting = useMemo(() => {
@@ -39,12 +70,12 @@ function Dashboard() {
   if (!profile.couple_id) {
     return (
       <div className="max-w-2xl mx-auto px-6 py-16 text-center animate-fade-up">
-        <div className="size-16 rounded-full bg-[color:var(--color-clay)]/15 mx-auto flex items-center justify-center mb-4">
-          <Heart className="size-7 text-[color:var(--color-clay)]" />
+        <div className="size-16 rounded-full bg-[color:var(--color-gold)]/15 mx-auto flex items-center justify-center mb-4">
+          <Heart className="size-7 text-[color:var(--color-gold-deep)]" />
         </div>
         <h1 className="font-serif text-4xl mb-3">Welcome to Together+</h1>
         <p className="text-muted-foreground mb-6">First, pair with your partner so we can prepare your space.</p>
-        <Link to="/pair" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-[var(--shadow-soft)] hover:opacity-90 transition-opacity">
+        <Link to="/pair" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-primary-foreground font-medium shadow-[var(--shadow-glow)] hover:opacity-90 transition-opacity">
           Pair with your partner
         </Link>
       </div>
@@ -53,17 +84,21 @@ function Dashboard() {
 
   const daysTogether = couple?.created_at ? daysBetween(couple.created_at) : 0;
   const anniversaryDays = couple?.anniversary_date ? daysBetween(couple.anniversary_date) : null;
+  const upcoming = (reminders ?? []).filter((r) => r.active && new Date(r.due_at).getTime() > Date.now()).slice(0, 3);
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10 space-y-6">
       <header className="animate-fade-up">
-        <p className="text-muted-foreground text-sm">{greeting},</p>
-        <h1 className="font-serif text-4xl md:text-5xl">{profile.display_name ?? "love"}.</h1>
+        <p className="text-xs uppercase tracking-[0.3em] text-[color:var(--color-gold-deep)] mb-2">{greeting}</p>
+        <h1 className="font-serif text-4xl md:text-5xl">
+          {profile.display_name ?? "Love"}
+          {partner?.display_name && <span className="text-muted-foreground/60"> & {partner.display_name}</span>}
+        </h1>
       </header>
 
-      <div className="bg-[var(--gradient-hero)] border border-border/40 rounded-2xl p-7 animate-fade-up [animation-delay:60ms] shadow-[var(--shadow-soft)]">
+      <div className="relative overflow-hidden border border-[color:var(--color-gold)]/30 rounded-2xl p-7 animate-fade-up [animation-delay:60ms] shadow-[var(--shadow-soft)]" style={{ background: "var(--gradient-hero)" }}>
         <div className="flex items-start gap-3">
-          <Sparkles className="size-5 text-[color:var(--color-clay)] mt-1" />
+          <Sparkles className="size-5 text-[color:var(--color-gold-deep)] mt-1" />
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">A thought for today</p>
             <p className="font-serif text-2xl leading-snug">{motivation}</p>
@@ -71,13 +106,34 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card title="Together for" value={`${daysTogether} ${daysTogether === 1 ? "day" : "days"}`} icon={Heart} color="sage" />
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card title="Together for" value={`${daysTogether}`} sub={daysTogether === 1 ? "day" : "days"} icon={Heart} />
         {anniversaryDays !== null && (
-          <Card title="Since your anniversary" value={`${Math.abs(anniversaryDays)} days`} icon={Calendar} color="clay" />
+          <Card title="Since anniversary" value={`${Math.abs(anniversaryDays)}`} sub="days" icon={Calendar} />
         )}
-        <Card title="Your partner" value={partner?.display_name ?? "Waiting…"} icon={Heart} color="sage" />
+        <Card title="Memories" value={`${counts.data?.memories ?? 0}`} sub="moments saved" icon={ImageIcon} />
+        <Card title="Messages" value={`${counts.data?.messages ?? 0}`} sub="shared" icon={MessageCircle} />
       </div>
+
+      {upcoming.length > 0 && (
+        <div className="bg-card border border-border/60 rounded-2xl p-6 animate-fade-up">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif text-2xl">Coming up</h2>
+            <Link to="/reminders" className="text-sm text-[color:var(--color-gold-deep)] hover:underline">View all</Link>
+          </div>
+          <ul className="space-y-2">
+            {upcoming.map((r) => (
+              <li key={r.id} className="flex items-center gap-3 py-2 border-b border-border/40 last:border-0">
+                <div className="size-9 rounded-lg bg-[color:var(--color-gold)]/15 text-[color:var(--color-gold-deep)] flex items-center justify-center"><Bell className="size-4" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{r.title}</p>
+                  <p className="text-xs text-muted-foreground">In {formatDistanceToNow(new Date(r.due_at))}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-2 gap-4">
         <QuickLink to="/chat" title="Send a message" body="Your private chat is one tap away." icon={MessageCircle} />
@@ -87,23 +143,23 @@ function Dashboard() {
   );
 }
 
-function Card({ title, value, icon: Icon, color }: { title: string; value: string; icon: React.ElementType; color: "sage" | "clay" }) {
-  const bg = color === "sage" ? "bg-[color:var(--color-sage)]/15 text-[color:var(--color-sage-deep)]" : "bg-[color:var(--color-clay)]/15 text-[color:var(--color-clay)]";
+function Card({ title, value, sub, icon: Icon }: { title: string; value: string; sub?: string; icon: React.ElementType }) {
   return (
     <div className="bg-card rounded-2xl p-6 border border-border/60 animate-fade-up">
-      <div className={`size-10 rounded-xl flex items-center justify-center mb-4 ${bg}`}><Icon className="size-5" /></div>
-      <p className="text-xs uppercase tracking-wider text-muted-foreground mb-1">{title}</p>
-      <p className="font-serif text-3xl">{value}</p>
+      <div className="size-10 rounded-xl flex items-center justify-center mb-4 bg-[color:var(--color-gold)]/15 text-[color:var(--color-gold-deep)]"><Icon className="size-5" /></div>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">{title}</p>
+      <p className="font-serif text-3xl leading-none">{value}</p>
+      {sub && <p className="text-xs text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
 }
 
 function QuickLink({ to, title, body, icon: Icon }: { to: "/chat" | "/memories"; title: string; body: string; icon: React.ElementType }) {
   return (
-    <Link to={to} className="group bg-card rounded-2xl p-6 border border-border/60 hover:shadow-[var(--shadow-soft)] transition-shadow flex items-start gap-4 animate-fade-up">
-      <div className="size-11 rounded-xl bg-secondary flex items-center justify-center"><Icon className="size-5 text-secondary-foreground" /></div>
+    <Link to={to} className="group bg-card rounded-2xl p-6 border border-border/60 hover:border-[color:var(--color-gold)]/50 hover:shadow-[var(--shadow-soft)] transition-all flex items-start gap-4 animate-fade-up">
+      <div className="size-11 rounded-xl bg-[color:var(--color-gold)]/15 flex items-center justify-center"><Icon className="size-5 text-[color:var(--color-gold-deep)]" /></div>
       <div className="flex-1">
-        <h3 className="font-serif text-xl mb-1 group-hover:text-[color:var(--color-clay)] transition-colors">{title}</h3>
+        <h3 className="font-serif text-xl mb-1 group-hover:text-[color:var(--color-gold-deep)] transition-colors">{title}</h3>
         <p className="text-muted-foreground text-sm">{body}</p>
       </div>
     </Link>
