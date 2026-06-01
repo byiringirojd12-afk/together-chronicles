@@ -106,6 +106,13 @@ function LoginPage() {
                 {mode === "signup" ? "Create account" : "Sign in"}
               </Button>
             </form>
+            {mode === "login" && (
+              <div className="text-right mt-3">
+                <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-foreground underline-offset-4 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+            )}
           </div>
           <p className="text-center text-sm text-muted-foreground mt-6">
             {mode === "signup" ? "Already have an account? " : "New here? "}

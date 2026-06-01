@@ -124,13 +124,25 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const [splashDone, setSplashDone] = useState(false);
+  // Only show the splash once per browser session — subsequent navigations
+  // shouldn't re-block the UI for 1.4s every full reload.
+  const [splashDone, setSplashDone] = useState(() => {
+    if (typeof window === "undefined") return true;
+    try { return sessionStorage.getItem("tp_splash_done") === "1"; } catch { return true; }
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync />
       <PwaRegister />
-      {!splashDone && <LoadingScreen onDone={() => setSplashDone(true)} />}
+      {!splashDone && (
+        <LoadingScreen
+          onDone={() => {
+            try { sessionStorage.setItem("tp_splash_done", "1"); } catch { /* ignore */ }
+            setSplashDone(true);
+          }}
+        />
+      )}
       <Outlet />
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
