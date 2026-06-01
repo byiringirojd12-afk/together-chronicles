@@ -17,7 +17,20 @@ export const Route = createFileRoute("/api/public/hooks/run-reminders")({
   },
 });
 
-async function handle() {
+function isAuthorized(request: Request): boolean {
+  const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
+  if (!expected) return false;
+  const provided =
+    request.headers.get("apikey") ??
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+    "";
+  return provided === expected;
+}
+
+async function handle({ request }: { request: Request }) {
+  if (!isAuthorized(request)) {
+    return new Response("Unauthorized", { status: 401 });
+  }
   const now = new Date();
   const nowIso = now.toISOString();
 

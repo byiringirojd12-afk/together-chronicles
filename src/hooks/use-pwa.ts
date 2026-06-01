@@ -5,7 +5,11 @@ function isPreviewOrIframe() {
     if (typeof window === "undefined") return true;
     if (window.self !== window.top) return true;
     const host = window.location.hostname;
-    return host.includes("id-preview--") || host.includes("lovableproject.com") || host.includes("lovable.app") && host.startsWith("id-preview");
+    return (
+      host.includes("id-preview--") ||
+      host.includes("lovableproject.com") ||
+      (host.includes("lovable.app") && host.startsWith("id-preview"))
+    );
   } catch {
     return true;
   }
@@ -16,43 +20,72 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// Module-level singletons so multiple hook consumers don't double-register
+// the service worker or double-bind controllerchange listeners.
+let registerPromise: Promise<ServiceWorkerRegistration | null> | null = null;
+const updateListeners = new Set<(w: ServiceWorker) => void>();
+let controllerChangeBound = false;
+
+function registerOnce(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) {
+    return Promise.resolve(null);
+  }
+  if (isPreviewOrIframe()) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((rs) => rs.forEach((r) => r.unregister()))
+      .catch(() => {});
+    return Promise.resolve(null);
+  }
+  if (!registerPromise) {
+    registerPromise = navigator.serviceWorker
+      .register("/sw.js")
+      .then((reg) => {
+        if (reg.waiting) updateListeners.forEach((cb) => cb(reg.waiting!));
+        reg.addEventListener("updatefound", () => {
+          const nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener("statechange", () => {
+            if (nw.state === "installed" && navigator.serviceWorker.controller) {
+              updateListeners.forEach((cb) => cb(nw));
+            }
+          });
+        });
+        return reg;
+      })
+      .catch(() => null);
+
+    if (!controllerChangeBound) {
+      controllerChangeBound = true;
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+    }
+  }
+  return registerPromise;
+}
+
 export function useServiceWorker() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
 
   useEffect(() => {
-    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
-    // Never register inside the Lovable preview iframe — caches stale builds.
-    if (isPreviewOrIframe()) {
-      navigator.serviceWorker.getRegistrations().then((rs) => rs.forEach((r) => r.unregister())).catch(() => {});
-      return;
-    }
-    let cancelled = false;
-    navigator.serviceWorker.register("/sw.js").then((reg) => {
-      if (cancelled) return;
-      if (reg.waiting) { setWaitingWorker(reg.waiting); setUpdateAvailable(true); }
-      reg.addEventListener("updatefound", () => {
-        const nw = reg.installing;
-        if (!nw) return;
-        nw.addEventListener("statechange", () => {
-          if (nw.state === "installed" && navigator.serviceWorker.controller) {
-            setWaitingWorker(nw);
-            setUpdateAvailable(true);
-          }
-        });
-      });
-    }).catch(() => { /* offline / blocked */ });
-
-    let refreshing = false;
-    const onControllerChange = () => {
-      if (refreshing) return;
-      refreshing = true;
-      window.location.reload();
+    registerOnce().then((reg) => {
+      if (reg?.waiting) {
+        setWaitingWorker(reg.waiting);
+        setUpdateAvailable(true);
+      }
+    });
+    const cb = (w: ServiceWorker) => {
+      setWaitingWorker(w);
+      setUpdateAvailable(true);
     };
-    navigator.serviceWorker.addEventListener("controllerchange", onControllerChange);
+    updateListeners.add(cb);
     return () => {
-      cancelled = true;
-      navigator.serviceWorker.removeEventListener("controllerchange", onControllerChange);
+      updateListeners.delete(cb);
     };
   }, []);
 
@@ -69,7 +102,8 @@ export function useInstallPrompt() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const isStandalone = window.matchMedia?.("(display-mode: standalone)").matches ||
+    const isStandalone =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
       // @ts-expect-error iOS Safari
       window.navigator.standalone === true;
     if (isStandalone) setInstalled(true);
@@ -78,7 +112,10 @@ export function useInstallPrompt() {
       e.preventDefault();
       setDeferred(e as BeforeInstallPromptEvent);
     };
-    const onInstalled = () => { setInstalled(true); setDeferred(null); };
+    const onInstalled = () => {
+      setInstalled(true);
+      setDeferred(null);
+    };
     window.addEventListener("beforeinstallprompt", onPrompt);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
