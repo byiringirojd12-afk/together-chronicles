@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      budgets: {
+        Row: {
+          category: string
+          couple_id: string
+          created_at: string
+          id: string
+          monthly_limit: number
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          couple_id: string
+          created_at?: string
+          id?: string
+          monthly_limit: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          couple_id?: string
+          created_at?: string
+          id?: string
+          monthly_limit?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      calendar_events: {
+        Row: {
+          all_day: boolean
+          color: string | null
+          couple_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          ends_at: string | null
+          event_type: string
+          id: string
+          location: string | null
+          recurrence: string
+          starts_at: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          all_day?: boolean
+          color?: string | null
+          couple_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: string
+          id?: string
+          location?: string | null
+          recurrence?: string
+          starts_at: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          all_day?: boolean
+          color?: string | null
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: string
+          id?: string
+          location?: string | null
+          recurrence?: string
+          starts_at?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       couples: {
         Row: {
           anniversary_date: string | null
@@ -32,6 +110,155 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string | null
+        }
+        Relationships: []
+      }
+      finance_categories: {
+        Row: {
+          color: string | null
+          couple_id: string
+          created_at: string
+          icon: string | null
+          id: string
+          kind: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          couple_id: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          kind: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          couple_id?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          kind?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      finance_transactions: {
+        Row: {
+          amount: number
+          category: string | null
+          couple_id: string
+          created_at: string
+          created_by: string
+          currency: string
+          id: string
+          kind: string
+          note: string | null
+          occurred_on: string
+        }
+        Insert: {
+          amount: number
+          category?: string | null
+          couple_id: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          id?: string
+          kind: string
+          note?: string | null
+          occurred_on?: string
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          id?: string
+          kind?: string
+          note?: string | null
+          occurred_on?: string
+        }
+        Relationships: []
+      }
+      goal_milestones: {
+        Row: {
+          completed: boolean
+          couple_id: string
+          created_at: string
+          goal_id: string
+          id: string
+          position: number
+          title: string
+        }
+        Insert: {
+          completed?: boolean
+          couple_id: string
+          created_at?: string
+          goal_id: string
+          id?: string
+          position?: number
+          title: string
+        }
+        Update: {
+          completed?: boolean
+          couple_id?: string
+          created_at?: string
+          goal_id?: string
+          id?: string
+          position?: number
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_milestones_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goals: {
+        Row: {
+          completed_at: string | null
+          couple_id: string
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          progress: number
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          couple_id: string
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          progress?: number
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          progress?: number
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -279,6 +506,45 @@ export type Database = {
           last_fired_at?: string | null
           recurrence?: string
           reminder_type?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      savings_goals: {
+        Row: {
+          couple_id: string
+          created_at: string
+          created_by: string
+          currency: string
+          current_amount: number
+          deadline: string | null
+          id: string
+          target_amount: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          created_by: string
+          currency?: string
+          current_amount?: number
+          deadline?: string | null
+          id?: string
+          target_amount: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          currency?: string
+          current_amount?: number
+          deadline?: string | null
+          id?: string
+          target_amount?: number
           title?: string
           updated_at?: string
         }
