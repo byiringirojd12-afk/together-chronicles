@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Heart, LayoutDashboard, MessageCircle, Image as ImageIcon, LogOut, Users, Bell } from "lucide-react";
+import { Heart, LayoutDashboard, MessageCircle, Image as ImageIcon, LogOut, Wallet, Target, Calendar as CalendarIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/notification-bell";
@@ -7,10 +7,14 @@ import { InstallButton } from "@/components/install-button";
 
 const nav = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { to: "/finance", label: "Finance", icon: Wallet },
+  { to: "/goals", label: "Goals", icon: Target },
+  { to: "/calendar", label: "Calendar", icon: CalendarIcon },
   { to: "/chat", label: "Chat", icon: MessageCircle },
+] as const;
+
+const moreNav = [
   { to: "/memories", label: "Memories", icon: ImageIcon },
-  { to: "/reminders", label: "Reminders", icon: Bell },
-  { to: "/pair", label: "Partner", icon: Users },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -45,6 +49,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          {moreNav.map((item) => {
+            const active = location.pathname.startsWith(item.to);
+            return (
+              <Link key={item.to} to={item.to}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
+                  active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
+                )}>
+                <item.icon className="size-4" /> {item.label}
+              </Link>
+            );
+          })}
+          <Link to="/reminders" className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors", location.pathname.startsWith("/reminders") ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground")}>
+            <Heart className="size-4" /> Reminders
+          </Link>
+          <Link to="/pair" className={cn("flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors", location.pathname.startsWith("/pair") ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground")}>
+            <Heart className="size-4" /> Partner
+          </Link>
         </nav>
         <div className="p-3 space-y-2">
           <div className="px-1"><InstallButton /></div>
