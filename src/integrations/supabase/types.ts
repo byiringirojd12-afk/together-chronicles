@@ -262,36 +262,150 @@ export type Database = {
         }
         Relationships: []
       }
+      location_events: {
+        Row: {
+          couple_id: string
+          event_type: string
+          id: string
+          occurred_at: string
+          place_id: string | null
+          place_name: string | null
+          user_id: string
+        }
+        Insert: {
+          couple_id: string
+          event_type: string
+          id?: string
+          occurred_at?: string
+          place_id?: string | null
+          place_name?: string | null
+          user_id: string
+        }
+        Update: {
+          couple_id?: string
+          event_type?: string
+          id?: string
+          occurred_at?: string
+          place_id?: string | null
+          place_name?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      location_settings: {
+        Row: {
+          arrival_notify: boolean
+          created_at: string
+          departure_notify: boolean
+          share_mode: string
+          share_until: string | null
+          sharing_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          arrival_notify?: boolean
+          created_at?: string
+          departure_notify?: boolean
+          share_mode?: string
+          share_until?: string | null
+          sharing_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          arrival_notify?: boolean
+          created_at?: string
+          departure_notify?: boolean
+          share_mode?: string
+          share_until?: string | null
+          sharing_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      locations: {
+        Row: {
+          accuracy: number | null
+          battery: number | null
+          couple_id: string
+          heading: number | null
+          lat: number
+          lng: number
+          speed: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          battery?: number | null
+          couple_id: string
+          heading?: number | null
+          lat: number
+          lng: number
+          speed?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          battery?: number | null
+          couple_id?: string
+          heading?: number | null
+          lat?: number
+          lng?: number
+          speed?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       memories: {
         Row: {
           caption: string | null
+          category: string | null
           couple_id: string
           created_at: string
           id: string
           image_url: string
+          media_type: string
           memory_date: string
+          thumbnail_url: string | null
           title: string | null
+          updated_at: string
           uploaded_by: string
+          video_url: string | null
         }
         Insert: {
           caption?: string | null
+          category?: string | null
           couple_id: string
           created_at?: string
           id?: string
           image_url: string
+          media_type?: string
           memory_date?: string
+          thumbnail_url?: string | null
           title?: string | null
+          updated_at?: string
           uploaded_by: string
+          video_url?: string | null
         }
         Update: {
           caption?: string | null
+          category?: string | null
           couple_id?: string
           created_at?: string
           id?: string
           image_url?: string
+          media_type?: string
           memory_date?: string
+          thumbnail_url?: string | null
           title?: string | null
+          updated_at?: string
           uploaded_by?: string
+          video_url?: string | null
         }
         Relationships: [
           {
@@ -303,26 +417,89 @@ export type Database = {
           },
         ]
       }
-      messages: {
+      memory_categories: {
         Row: {
-          content: string
+          color: string | null
+          couple_id: string
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          couple_id: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string | null
+          couple_id?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      memory_favorites: {
+        Row: {
           couple_id: string
           created_at: string
           id: string
-          sender_id: string
+          memory_id: string
+          user_id: string
         }
         Insert: {
-          content: string
           couple_id: string
           created_at?: string
           id?: string
-          sender_id: string
+          memory_id: string
+          user_id: string
         }
         Update: {
-          content?: string
           couple_id?: string
           created_at?: string
           id?: string
+          memory_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string | null
+          couple_id: string
+          created_at: string
+          edited_at: string | null
+          id: string
+          image_url: string | null
+          read_at: string | null
+          reply_to_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          content?: string | null
+          couple_id: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          image_url?: string | null
+          read_at?: string | null
+          reply_to_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string | null
+          couple_id?: string
+          created_at?: string
+          edited_at?: string | null
+          id?: string
+          image_url?: string | null
+          read_at?: string | null
+          reply_to_id?: string | null
           sender_id?: string
         }
         Relationships: [
@@ -511,6 +688,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_places: {
+        Row: {
+          couple_id: string
+          created_at: string
+          created_by: string
+          id: string
+          kind: string
+          lat: number
+          lng: number
+          name: string
+          radius_m: number
+        }
+        Insert: {
+          couple_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          kind?: string
+          lat: number
+          lng: number
+          name: string
+          radius_m?: number
+        }
+        Update: {
+          couple_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          kind?: string
+          lat?: number
+          lng?: number
+          name?: string
+          radius_m?: number
+        }
+        Relationships: []
+      }
       savings_goals: {
         Row: {
           couple_id: string
@@ -559,6 +772,7 @@ export type Database = {
         Args: { _anniversary: string; _name: string }
         Returns: string
       }
+      is_sharing_active: { Args: { _user: string }; Returns: boolean }
       pair_with_code: { Args: { _code: string }; Returns: string }
       user_couple_id: { Args: { _user: string }; Returns: string }
     }
