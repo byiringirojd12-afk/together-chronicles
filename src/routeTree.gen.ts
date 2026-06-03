@@ -17,13 +17,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRemindersRouteImport } from './routes/_authenticated/reminders'
 import { Route as AuthenticatedPairRouteImport } from './routes/_authenticated/pair'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
-import { Route as AuthenticatedMemoriesRouteImport } from './routes/_authenticated/memories'
 import { Route as AuthenticatedLocationRouteImport } from './routes/_authenticated/location'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFinanceRouteImport } from './routes/_authenticated/finance'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedMemoriesIndexRouteImport } from './routes/_authenticated/memories.index'
 import { Route as AuthenticatedMemoriesIdRouteImport } from './routes/_authenticated/memories.$id'
 import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
 
@@ -67,11 +67,6 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
-const AuthenticatedMemoriesRoute = AuthenticatedMemoriesRouteImport.update({
-  id: '/memories',
-  path: '/memories',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
 const AuthenticatedLocationRoute = AuthenticatedLocationRouteImport.update({
   id: '/location',
   path: '/location',
@@ -102,10 +97,16 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMemoriesIndexRoute =
+  AuthenticatedMemoriesIndexRouteImport.update({
+    id: '/memories/',
+    path: '/memories/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMemoriesIdRoute = AuthenticatedMemoriesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedMemoriesRoute,
+  id: '/memories/$id',
+  path: '/memories/$id',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 const ApiPublicHooksRunRemindersRoute =
   ApiPublicHooksRunRemindersRouteImport.update({
@@ -125,11 +126,11 @@ export interface FileRoutesByFullPath {
   '/finance': typeof AuthenticatedFinanceRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/location': typeof AuthenticatedLocationRoute
-  '/memories': typeof AuthenticatedMemoriesRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/pair': typeof AuthenticatedPairRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/memories/$id': typeof AuthenticatedMemoriesIdRoute
+  '/memories/': typeof AuthenticatedMemoriesIndexRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -143,11 +144,11 @@ export interface FileRoutesByTo {
   '/finance': typeof AuthenticatedFinanceRoute
   '/goals': typeof AuthenticatedGoalsRoute
   '/location': typeof AuthenticatedLocationRoute
-  '/memories': typeof AuthenticatedMemoriesRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/pair': typeof AuthenticatedPairRoute
   '/reminders': typeof AuthenticatedRemindersRoute
   '/memories/$id': typeof AuthenticatedMemoriesIdRoute
+  '/memories': typeof AuthenticatedMemoriesIndexRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
 }
 export interface FileRoutesById {
@@ -163,11 +164,11 @@ export interface FileRoutesById {
   '/_authenticated/finance': typeof AuthenticatedFinanceRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
   '/_authenticated/location': typeof AuthenticatedLocationRoute
-  '/_authenticated/memories': typeof AuthenticatedMemoriesRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/pair': typeof AuthenticatedPairRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
   '/_authenticated/memories/$id': typeof AuthenticatedMemoriesIdRoute
+  '/_authenticated/memories/': typeof AuthenticatedMemoriesIndexRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
 }
 export interface FileRouteTypes {
@@ -183,11 +184,11 @@ export interface FileRouteTypes {
     | '/finance'
     | '/goals'
     | '/location'
-    | '/memories'
     | '/notifications'
     | '/pair'
     | '/reminders'
     | '/memories/$id'
+    | '/memories/'
     | '/api/public/hooks/run-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -201,11 +202,11 @@ export interface FileRouteTypes {
     | '/finance'
     | '/goals'
     | '/location'
-    | '/memories'
     | '/notifications'
     | '/pair'
     | '/reminders'
     | '/memories/$id'
+    | '/memories'
     | '/api/public/hooks/run-reminders'
   id:
     | '__root__'
@@ -220,11 +221,11 @@ export interface FileRouteTypes {
     | '/_authenticated/finance'
     | '/_authenticated/goals'
     | '/_authenticated/location'
-    | '/_authenticated/memories'
     | '/_authenticated/notifications'
     | '/_authenticated/pair'
     | '/_authenticated/reminders'
     | '/_authenticated/memories/$id'
+    | '/_authenticated/memories/'
     | '/api/public/hooks/run-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -295,13 +296,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
-    '/_authenticated/memories': {
-      id: '/_authenticated/memories'
-      path: '/memories'
-      fullPath: '/memories'
-      preLoaderRoute: typeof AuthenticatedMemoriesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
     '/_authenticated/location': {
       id: '/_authenticated/location'
       path: '/location'
@@ -344,12 +338,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/memories/': {
+      id: '/_authenticated/memories/'
+      path: '/memories'
+      fullPath: '/memories/'
+      preLoaderRoute: typeof AuthenticatedMemoriesIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/memories/$id': {
       id: '/_authenticated/memories/$id'
-      path: '/$id'
+      path: '/memories/$id'
       fullPath: '/memories/$id'
       preLoaderRoute: typeof AuthenticatedMemoriesIdRouteImport
-      parentRoute: typeof AuthenticatedMemoriesRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/api/public/hooks/run-reminders': {
       id: '/api/public/hooks/run-reminders'
@@ -361,19 +362,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedMemoriesRouteChildren {
-  AuthenticatedMemoriesIdRoute: typeof AuthenticatedMemoriesIdRoute
-}
-
-const AuthenticatedMemoriesRouteChildren: AuthenticatedMemoriesRouteChildren = {
-  AuthenticatedMemoriesIdRoute: AuthenticatedMemoriesIdRoute,
-}
-
-const AuthenticatedMemoriesRouteWithChildren =
-  AuthenticatedMemoriesRoute._addFileChildren(
-    AuthenticatedMemoriesRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
@@ -381,10 +369,11 @@ interface AuthenticatedRouteChildren {
   AuthenticatedFinanceRoute: typeof AuthenticatedFinanceRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
   AuthenticatedLocationRoute: typeof AuthenticatedLocationRoute
-  AuthenticatedMemoriesRoute: typeof AuthenticatedMemoriesRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPairRoute: typeof AuthenticatedPairRoute
   AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
+  AuthenticatedMemoriesIdRoute: typeof AuthenticatedMemoriesIdRoute
+  AuthenticatedMemoriesIndexRoute: typeof AuthenticatedMemoriesIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -394,10 +383,11 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedFinanceRoute: AuthenticatedFinanceRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
   AuthenticatedLocationRoute: AuthenticatedLocationRoute,
-  AuthenticatedMemoriesRoute: AuthenticatedMemoriesRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPairRoute: AuthenticatedPairRoute,
   AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
+  AuthenticatedMemoriesIdRoute: AuthenticatedMemoriesIdRoute,
+  AuthenticatedMemoriesIndexRoute: AuthenticatedMemoriesIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
