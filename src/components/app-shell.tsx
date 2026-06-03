@@ -1,9 +1,10 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { Heart, LayoutDashboard, MessageCircle, Image as ImageIcon, LogOut, Wallet, Target, Calendar as CalendarIcon } from "lucide-react";
+import { Heart, LayoutDashboard, MessageCircle, Image as ImageIcon, LogOut, Wallet, Target, Calendar as CalendarIcon, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/notification-bell";
 import { InstallButton } from "@/components/install-button";
+import { useUnreadCount } from "@/hooks/use-chat";
 
 const nav = [
   { to: "/dashboard", label: "Home", icon: LayoutDashboard },
@@ -15,11 +16,13 @@ const nav = [
 
 const moreNav = [
   { to: "/memories", label: "Memories", icon: ImageIcon },
+  { to: "/location", label: "Location", icon: MapPin },
 ] as const;
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const unread = useUnreadCount();
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -45,7 +48,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
                   active ? "bg-secondary text-secondary-foreground" : "text-muted-foreground hover:bg-secondary/50 hover:text-foreground"
                 )}>
-                <item.icon className="size-4" /> {item.label}
+                <item.icon className="size-4" /> <span className="flex-1">{item.label}</span>
+                {item.to === "/chat" && unread > 0 && <span className="text-[10px] bg-[color:var(--color-gold-deep)] text-white rounded-full px-1.5 py-0.5 min-w-5 text-center">{unread}</span>}
               </Link>
             );
           })}
@@ -107,7 +111,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors",
                 active ? "text-[color:var(--color-gold-deep)]" : "text-muted-foreground"
               )}>
-                <item.icon className="size-5" /> {item.label}
+                <div className="relative">
+                  <item.icon className="size-5" />
+                  {item.to === "/chat" && unread > 0 && <span className="absolute -top-1 -right-2 text-[9px] bg-[color:var(--color-gold-deep)] text-white rounded-full px-1 min-w-4 text-center">{unread}</span>}
+                </div>
+                {item.label}
               </Link>
             );
           })}
