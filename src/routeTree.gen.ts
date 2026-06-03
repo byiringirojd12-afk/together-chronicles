@@ -18,11 +18,13 @@ import { Route as AuthenticatedRemindersRouteImport } from './routes/_authentica
 import { Route as AuthenticatedPairRouteImport } from './routes/_authenticated/pair'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMemoriesRouteImport } from './routes/_authenticated/memories'
+import { Route as AuthenticatedLocationRouteImport } from './routes/_authenticated/location'
 import { Route as AuthenticatedGoalsRouteImport } from './routes/_authenticated/goals'
 import { Route as AuthenticatedFinanceRouteImport } from './routes/_authenticated/finance'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
+import { Route as AuthenticatedMemoriesIdRouteImport } from './routes/_authenticated/memories.$id'
 import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -70,6 +72,11 @@ const AuthenticatedMemoriesRoute = AuthenticatedMemoriesRouteImport.update({
   path: '/memories',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedLocationRoute = AuthenticatedLocationRouteImport.update({
+  id: '/location',
+  path: '/location',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedGoalsRoute = AuthenticatedGoalsRouteImport.update({
   id: '/goals',
   path: '/goals',
@@ -95,6 +102,11 @@ const AuthenticatedCalendarRoute = AuthenticatedCalendarRouteImport.update({
   path: '/calendar',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMemoriesIdRoute = AuthenticatedMemoriesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedMemoriesRoute,
+} as any)
 const ApiPublicHooksRunRemindersRoute =
   ApiPublicHooksRunRemindersRouteImport.update({
     id: '/api/public/hooks/run-reminders',
@@ -112,10 +124,12 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/finance': typeof AuthenticatedFinanceRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/memories': typeof AuthenticatedMemoriesRoute
+  '/location': typeof AuthenticatedLocationRoute
+  '/memories': typeof AuthenticatedMemoriesRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/pair': typeof AuthenticatedPairRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/memories/$id': typeof AuthenticatedMemoriesIdRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -128,10 +142,12 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/finance': typeof AuthenticatedFinanceRoute
   '/goals': typeof AuthenticatedGoalsRoute
-  '/memories': typeof AuthenticatedMemoriesRoute
+  '/location': typeof AuthenticatedLocationRoute
+  '/memories': typeof AuthenticatedMemoriesRouteWithChildren
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/pair': typeof AuthenticatedPairRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/memories/$id': typeof AuthenticatedMemoriesIdRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
 }
 export interface FileRoutesById {
@@ -146,10 +162,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/finance': typeof AuthenticatedFinanceRoute
   '/_authenticated/goals': typeof AuthenticatedGoalsRoute
-  '/_authenticated/memories': typeof AuthenticatedMemoriesRoute
+  '/_authenticated/location': typeof AuthenticatedLocationRoute
+  '/_authenticated/memories': typeof AuthenticatedMemoriesRouteWithChildren
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/pair': typeof AuthenticatedPairRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
+  '/_authenticated/memories/$id': typeof AuthenticatedMemoriesIdRoute
   '/api/public/hooks/run-reminders': typeof ApiPublicHooksRunRemindersRoute
 }
 export interface FileRouteTypes {
@@ -164,10 +182,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/finance'
     | '/goals'
+    | '/location'
     | '/memories'
     | '/notifications'
     | '/pair'
     | '/reminders'
+    | '/memories/$id'
     | '/api/public/hooks/run-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -180,10 +200,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/finance'
     | '/goals'
+    | '/location'
     | '/memories'
     | '/notifications'
     | '/pair'
     | '/reminders'
+    | '/memories/$id'
     | '/api/public/hooks/run-reminders'
   id:
     | '__root__'
@@ -197,10 +219,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/finance'
     | '/_authenticated/goals'
+    | '/_authenticated/location'
     | '/_authenticated/memories'
     | '/_authenticated/notifications'
     | '/_authenticated/pair'
     | '/_authenticated/reminders'
+    | '/_authenticated/memories/$id'
     | '/api/public/hooks/run-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -278,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMemoriesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/location': {
+      id: '/_authenticated/location'
+      path: '/location'
+      fullPath: '/location'
+      preLoaderRoute: typeof AuthenticatedLocationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/goals': {
       id: '/_authenticated/goals'
       path: '/goals'
@@ -313,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCalendarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/memories/$id': {
+      id: '/_authenticated/memories/$id'
+      path: '/$id'
+      fullPath: '/memories/$id'
+      preLoaderRoute: typeof AuthenticatedMemoriesIdRouteImport
+      parentRoute: typeof AuthenticatedMemoriesRoute
+    }
     '/api/public/hooks/run-reminders': {
       id: '/api/public/hooks/run-reminders'
       path: '/api/public/hooks/run-reminders'
@@ -323,13 +361,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedMemoriesRouteChildren {
+  AuthenticatedMemoriesIdRoute: typeof AuthenticatedMemoriesIdRoute
+}
+
+const AuthenticatedMemoriesRouteChildren: AuthenticatedMemoriesRouteChildren = {
+  AuthenticatedMemoriesIdRoute: AuthenticatedMemoriesIdRoute,
+}
+
+const AuthenticatedMemoriesRouteWithChildren =
+  AuthenticatedMemoriesRoute._addFileChildren(
+    AuthenticatedMemoriesRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFinanceRoute: typeof AuthenticatedFinanceRoute
   AuthenticatedGoalsRoute: typeof AuthenticatedGoalsRoute
-  AuthenticatedMemoriesRoute: typeof AuthenticatedMemoriesRoute
+  AuthenticatedLocationRoute: typeof AuthenticatedLocationRoute
+  AuthenticatedMemoriesRoute: typeof AuthenticatedMemoriesRouteWithChildren
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPairRoute: typeof AuthenticatedPairRoute
   AuthenticatedRemindersRoute: typeof AuthenticatedRemindersRoute
@@ -341,7 +393,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFinanceRoute: AuthenticatedFinanceRoute,
   AuthenticatedGoalsRoute: AuthenticatedGoalsRoute,
-  AuthenticatedMemoriesRoute: AuthenticatedMemoriesRoute,
+  AuthenticatedLocationRoute: AuthenticatedLocationRoute,
+  AuthenticatedMemoriesRoute: AuthenticatedMemoriesRouteWithChildren,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPairRoute: AuthenticatedPairRoute,
   AuthenticatedRemindersRoute: AuthenticatedRemindersRoute,
@@ -362,3 +415,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
