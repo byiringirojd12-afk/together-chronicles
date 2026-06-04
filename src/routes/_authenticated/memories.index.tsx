@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuth } from "@/hooks/use-auth";
 import { useMemories, useMemoryMutations } from "@/hooks/use-memories";
+import { MemoryMedia } from "@/components/memory-media";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/memories/")({
