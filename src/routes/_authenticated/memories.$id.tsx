@@ -67,7 +67,9 @@ function MemoryDetail() {
       <button onClick={() => navigate({ to: "/memories" })} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"><ArrowLeft className="size-4" /> Back</button>
 
       <div className="rounded-2xl overflow-hidden bg-secondary border border-border/60">
-        {mem.media_type === "video" ? (
+        {!url ? (
+          <div className="w-full h-64 bg-muted animate-pulse" />
+        ) : mem.media_type === "video" ? (
           <video src={url} controls className="w-full h-auto max-h-[70vh] bg-black" />
         ) : (
           <img src={url} alt={mem.title ?? "Memory"} className="w-full h-auto max-h-[70vh] object-contain" />
