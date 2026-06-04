@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useMemoryMutations, type Memory } from "@/hooks/use-memories";
+import { useSignedMemoryUrl } from "@/components/memory-media";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/memories/$id")({
@@ -38,7 +39,8 @@ function MemoryDetail() {
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>;
   if (!mem) return <div className="text-center py-20 text-muted-foreground">Memory not found. <Link to="/memories" className="underline">Back to memories</Link></div>;
 
-  const url = mem.media_type === "video" ? (mem.video_url ?? mem.image_url) : mem.image_url;
+  const rawUrl = mem.media_type === "video" ? (mem.video_url ?? mem.image_url) : mem.image_url;
+  const url = useSignedMemoryUrl(rawUrl);
   const own = mem.uploaded_by === user?.id;
 
   async function download() {
