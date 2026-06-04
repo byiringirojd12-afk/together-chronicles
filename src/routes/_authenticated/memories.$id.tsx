@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useMemoryMutations, type Memory } from "@/hooks/use-memories";
+import { useSignedMemoryUrl } from "@/components/memory-media";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/memories/$id")({
@@ -38,7 +39,8 @@ function MemoryDetail() {
   if (loading) return <div className="flex justify-center py-20"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>;
   if (!mem) return <div className="text-center py-20 text-muted-foreground">Memory not found. <Link to="/memories" className="underline">Back to memories</Link></div>;
 
-  const url = mem.media_type === "video" ? (mem.video_url ?? mem.image_url) : mem.image_url;
+  const rawUrl = mem.media_type === "video" ? (mem.video_url ?? mem.image_url) : mem.image_url;
+  const url = useSignedMemoryUrl(rawUrl);
   const own = mem.uploaded_by === user?.id;
 
   async function download() {
@@ -65,7 +67,9 @@ function MemoryDetail() {
       <button onClick={() => navigate({ to: "/memories" })} className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2"><ArrowLeft className="size-4" /> Back</button>
 
       <div className="rounded-2xl overflow-hidden bg-secondary border border-border/60">
-        {mem.media_type === "video" ? (
+        {!url ? (
+          <div className="w-full h-64 bg-muted animate-pulse" />
+        ) : mem.media_type === "video" ? (
           <video src={url} controls className="w-full h-auto max-h-[70vh] bg-black" />
         ) : (
           <img src={url} alt={mem.title ?? "Memory"} className="w-full h-auto max-h-[70vh] object-contain" />

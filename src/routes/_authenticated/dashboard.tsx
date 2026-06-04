@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile, useCouple, usePartner } from "@/hooks/use-profile";
 import { useReminders } from "@/hooks/use-notifications";
 import { useMemories } from "@/hooks/use-memories";
+import { MemoryMedia } from "@/components/memory-media";
 import { useUnreadCount } from "@/hooks/use-chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -155,9 +156,7 @@ function Dashboard() {
           <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {recentMemories.map((m) => (
               <Link key={m.id} to="/memories/$id" params={{ id: m.id }} className="aspect-square rounded-xl overflow-hidden bg-secondary group">
-                {m.media_type === "video"
-                  ? <video src={m.video_url ?? undefined} className="w-full h-full object-cover" muted playsInline preload="metadata" />
-                  : <img src={m.image_url} alt={m.title ?? ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />}
+                <MemoryMedia url={m.media_type === "video" ? m.video_url : m.image_url} type={m.media_type} alt={m.title ?? ""} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
               </Link>
             ))}
           </div>
@@ -171,7 +170,7 @@ function Dashboard() {
           <div className="grid grid-cols-3 gap-2">
             {anniversaryMemories.map((m) => (
               <Link key={m.id} to="/memories/$id" params={{ id: m.id }} className="aspect-square rounded-xl overflow-hidden bg-secondary">
-                <img src={m.image_url} alt="" className="w-full h-full object-cover" loading="lazy" />
+                <MemoryMedia url={m.image_url} type="image" className="w-full h-full object-cover" />
               </Link>
             ))}
           </div>

@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useProfile } from "@/hooks/use-profile";
 import { useAuth } from "@/hooks/use-auth";
 import { useMemories, useMemoryMutations } from "@/hooks/use-memories";
+import { MemoryMedia } from "@/components/memory-media";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/memories/")({
@@ -101,13 +102,9 @@ function MemoriesPage() {
                   return (
                     <Link to="/memories/$id" params={{ id: m.id }} key={m.id} className="group bg-card rounded-2xl overflow-hidden border border-border/60 animate-fade-up hover:border-[color:var(--color-gold)]/40 transition-colors">
                       <div className="relative aspect-square overflow-hidden bg-secondary">
-                        {m.media_type === "video" ? (
-                          <>
-                            <video src={m.video_url ?? undefined} className="w-full h-full object-cover" preload="metadata" muted playsInline />
-                            <div className="absolute inset-0 flex items-center justify-center bg-black/20"><Play className="size-10 text-white drop-shadow" fill="currentColor" /></div>
-                          </>
-                        ) : (
-                          <img src={m.image_url} alt={m.title ?? "Memory"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                        <MemoryMedia url={m.media_type === "video" ? m.video_url : m.image_url} type={m.media_type} alt={m.title ?? "Memory"} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        {m.media_type === "video" && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none"><Play className="size-10 text-white drop-shadow" fill="currentColor" /></div>
                         )}
                         <button
                           onClick={(e) => { e.preventDefault(); toggleFavorite.mutate({ memoryId: m.id, isFav }); }}

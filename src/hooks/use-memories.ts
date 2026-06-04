@@ -102,14 +102,15 @@ export function useMemoryMutations() {
     if (!user || !profile?.couple_id) throw new Error("Not paired");
     const isVideo = file.type.startsWith("video/");
     const ext = file.name.split(".").pop() ?? (isVideo ? "mp4" : "jpg");
-    const path = `${user.id}/${Date.now()}.${ext}`;
+    const path = `${profile.couple_id}/${user.id}/${Date.now()}.${ext}`;
     const { error: upErr } = await supabase.storage.from("memories").upload(path, file, { contentType: file.type });
     if (upErr) throw upErr;
-    const { data: { publicUrl } } = supabase.storage.from("memories").getPublicUrl(path);
+    // Bucket is private; store the storage path. UI resolves it to a signed URL on demand.
+    const storedUrl = `storage://memories/${path}`;
     const row = {
       couple_id: profile.couple_id, uploaded_by: user.id,
-      image_url: isVideo ? "" : publicUrl,
-      video_url: isVideo ? publicUrl : null,
+      image_url: isVideo ? "" : storedUrl,
+      video_url: isVideo ? storedUrl : null,
       media_type: isVideo ? "video" : "image",
       title: fields.title?.trim() || null, caption: fields.caption?.trim() || null,
       category: fields.category || null, memory_date: fields.date,
