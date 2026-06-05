@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./use-auth";
 
+const VAPID_PUBLIC_KEY = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined) || undefined;
+
 /**
  * Browser Web Push subscription handler.
  * Stores subscriptions in `push_subscriptions` so a server (future FCM
@@ -13,6 +15,7 @@ export function useWebPush() {
   const [permission, setPermission] = useState<NotificationPermission>("default");
   const [subscribed, setSubscribed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const setupRequired = !VAPID_PUBLIC_KEY;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -24,8 +27,9 @@ export function useWebPush() {
     }
   }, []);
 
-  async function enable(vapidPublicKey?: string) {
+  async function enable(vapidPublicKey: string | undefined = VAPID_PUBLIC_KEY) {
     if (!supported || !user) return false;
+    if (!vapidPublicKey) return false; // setup required — caller surfaces a setup message
     setBusy(true);
     try {
       const perm = await Notification.requestPermission();
@@ -33,14 +37,6 @@ export function useWebPush() {
       if (perm !== "granted") return false;
 
       const reg = await navigator.serviceWorker.ready;
-
-      // If no VAPID key is configured yet, we still flip the permission
-      // and record the preference; actual push delivery will activate
-      // once VAPID/FCM keys are wired.
-      if (!vapidPublicKey) {
-        setSubscribed(true);
-        return true;
-      }
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -81,7 +77,7 @@ export function useWebPush() {
     }
   }
 
-  return { supported, permission, subscribed, busy, enable, disable };
+  return { supported, permission, subscribed, busy, enable, disable, setupRequired };
 }
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {

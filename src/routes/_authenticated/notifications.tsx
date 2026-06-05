@@ -70,16 +70,21 @@ function NotificationsPage() {
                 <p className="text-xs text-muted-foreground mt-1 max-w-md">
                   Get notified even when the app is closed. Works best when Together+ is installed to your home screen.
                   {!push.supported && " Your browser doesn't support push notifications."}
+                  {push.supported && push.setupRequired && (
+                    <span className="block mt-1 text-amber-700">
+                      Setup required: add <code className="px-1 rounded bg-background border text-[10px]">VITE_VAPID_PUBLIC_KEY</code> in Project Settings → Environment to enable background push delivery. In-app and email reminders work without it.
+                    </span>
+                  )}
                 </p>
               </div>
               <Switch
-                disabled={!push.supported || push.busy}
-                checked={push.subscribed || prefs?.push_enabled || false}
+                disabled={!push.supported || push.busy || push.setupRequired}
+                checked={push.subscribed}
                 onCheckedChange={async (v) => {
                   if (v) {
                     const ok = await push.enable();
                     if (ok) { update.mutate({ push_enabled: true }); toast.success("Push enabled"); }
-                    else toast.error("Couldn't enable push");
+                    else toast.error(push.setupRequired ? "Push setup not configured yet" : "Couldn't enable push");
                   } else {
                     await push.disable();
                     update.mutate({ push_enabled: false });

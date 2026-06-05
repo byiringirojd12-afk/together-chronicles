@@ -10,7 +10,17 @@ const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => cache.addAll([OFFLINE_URL, "/manifest.webmanifest"])).then(() => self.skipWaiting())
+    (async () => {
+      const cache = await caches.open(STATIC_CACHE);
+      // Cache each entry individually so a single 404 (e.g. SSR-only path) doesn't abort the whole install.
+      await Promise.all([OFFLINE_URL, "/manifest.webmanifest"].map(async (url) => {
+        try {
+          const res = await fetch(url, { cache: "reload" });
+          if (res && res.ok) await cache.put(url, res.clone());
+        } catch { /* ignore — offline page will fall through to 503 */ }
+      }));
+      await self.skipWaiting();
+    })()
   );
 });
 

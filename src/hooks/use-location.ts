@@ -190,13 +190,7 @@ export function useGeolocationWatcher() {
         // Geofence detection
         for (const p of places) {
           const inside = insideRef.current.has(p.id);
-          const dist = Math.round(
-            2 * 6371000 * Math.asin(Math.sqrt(
-              Math.sin(((p.lat - latitude) * Math.PI / 180) / 2) ** 2 +
-              Math.cos(latitude * Math.PI / 180) * Math.cos(p.lat * Math.PI / 180) *
-              Math.sin(((p.lng - longitude) * Math.PI / 180) / 2) ** 2
-            ))
-          );
+          const dist = Math.round(haversineM({ lat: latitude, lng: longitude }, { lat: p.lat, lng: p.lng }));
           const nowInside = dist <= p.radius_m;
           if (nowInside && !inside) {
             insideRef.current.add(p.id);

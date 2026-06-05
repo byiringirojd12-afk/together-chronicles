@@ -88,9 +88,11 @@ export function useReminders() {
     queryKey: ["reminders", coupleId],
     enabled: !!coupleId,
     queryFn: async (): Promise<Reminder[]> => {
+      if (!coupleId) return [];
       const { data, error } = await supabase
         .from("reminders")
         .select("*")
+        .eq("couple_id", coupleId)
         .order("due_at", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Reminder[];

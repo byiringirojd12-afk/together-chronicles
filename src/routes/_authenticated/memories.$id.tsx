@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Download, Heart, Pencil, Trash2, Loader2, Check, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, Download, Pencil, Trash2, Loader2, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,13 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/_authenticated/memories/$id")({
   head: () => ({ meta: [{ title: "Memory — Together+" }] }),
   component: MemoryDetail,
+  errorComponent: ({ error }) => (
+    <div className="max-w-md mx-auto text-center py-20">
+      <p className="font-serif text-2xl mb-2">Couldn't load this memory</p>
+      <p className="text-sm text-muted-foreground mb-4">{error.message}</p>
+      <Link to="/memories" className="underline">Back to memories</Link>
+    </div>
+  ),
 });
 
 function MemoryDetail() {
@@ -21,27 +29,32 @@ function MemoryDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { update, remove } = useMemoryMutations();
-  const [mem, setMem] = useState<Memory | null>(null);
-  const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [category, setCategory] = useState("");
 
+  const { data: mem, isLoading, error } = useQuery({
+    queryKey: ["memory", id],
+    queryFn: async (): Promise<Memory | null> => {
+      const { data, error: e } = await supabase.from("memories").select("*").eq("id", id).maybeSingle();
+      if (e) throw e;
+      return (data as Memory | null) ?? null;
+    },
+  });
+
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase.from("memories").select("*").eq("id", id).maybeSingle();
-      if (data) { setMem(data as Memory); setTitle(data.title ?? ""); setCaption(data.caption ?? ""); setCategory(data.category ?? ""); }
-      setLoading(false);
-    })();
-  }, [id]);
+    if (mem) { setTitle(mem.title ?? ""); setCaption(mem.caption ?? ""); setCategory(mem.category ?? ""); }
+  }, [mem]);
 
-  if (loading) return <div className="flex justify-center py-20"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>;
-  if (!mem) return <div className="text-center py-20 text-muted-foreground">Memory not found. <Link to="/memories" className="underline">Back to memories</Link></div>;
-
-  const rawUrl = mem.media_type === "video" ? (mem.video_url ?? mem.image_url) : mem.image_url;
+  // Hooks must be unconditional — compute these BEFORE any early return.
+  const rawUrl = mem ? (mem.media_type === "video" ? (mem.video_url ?? mem.image_url) : mem.image_url) : null;
   const url = useSignedMemoryUrl(rawUrl);
-  const own = mem.uploaded_by === user?.id;
+  const own = !!mem && mem.uploaded_by === user?.id;
+
+  if (isLoading) return <div className="flex justify-center py-20"><Loader2 className="size-6 animate-spin text-muted-foreground" /></div>;
+  if (error) return <div className="text-center py-20 text-destructive">Couldn't load: {(error as Error).message}</div>;
+  if (!mem) return <div className="text-center py-20 text-muted-foreground">Memory not found. <Link to="/memories" className="underline">Back to memories</Link></div>;
 
   async function download() {
     if (!url) return;
@@ -56,8 +69,8 @@ function MemoryDetail() {
   }
 
   async function save() {
-    await update.mutateAsync({ id: mem!.id, patch: { title: title.trim() || null, caption: caption.trim() || null, category: category.trim() || null } });
-    setMem({ ...mem!, title: title.trim() || null, caption: caption.trim() || null, category: category.trim() || null });
+    if (!mem) return;
+    await update.mutateAsync({ id: mem.id, patch: { title: title.trim() || null, caption: caption.trim() || null, category: category.trim() || null } });
     setEditing(false);
     toast.success("Saved");
   }

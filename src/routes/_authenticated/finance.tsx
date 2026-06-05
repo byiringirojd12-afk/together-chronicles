@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, TrendingDown, TrendingUp, Trash2, PiggyBank, AlertTriangle } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, parseISO } from "date-fns";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
@@ -230,21 +230,25 @@ function BudgetAlerts({ thisMonth, budgets }: { thisMonth: ReturnType<typeof use
     const pct = (spent / Number(b.monthly_limit)) * 100;
     if (pct >= 80) alerts.push({ category: b.category, spent, limit: Number(b.monthly_limit), pct });
   }
-  if (alerts.length === 0) return null;
 
-  // best-effort: notify self once per category per session
-  if (typeof window !== "undefined" && user) {
+  // Best-effort: notify self once per category per month. Runs in an effect
+  // (never during render) so StrictMode double-renders don't double-insert.
+  const exceededKey = alerts.filter((a) => a.pct >= 100).map((a) => a.category).sort().join(",");
+  useEffect(() => {
+    if (typeof window === "undefined" || !user || !exceededKey) return;
     const key = `tp_budget_notified_${new Date().toISOString().slice(0, 7)}_${user.id}`;
     const notified: string[] = JSON.parse(sessionStorage.getItem(key) || "[]");
     const toNotify = alerts.filter((a) => a.pct >= 100 && !notified.includes(a.category));
-    if (toNotify.length) {
-      sessionStorage.setItem(key, JSON.stringify([...notified, ...toNotify.map((a) => a.category)]));
-      supabase.from("notifications").insert(toNotify.map((a) => ({
-        user_id: user.id, type: "budget", title: `Budget exceeded: ${a.category}`,
-        body: `You've spent ${fmt(a.spent)} of a ${fmt(a.limit)} budget.`,
-      }))).then(() => {});
-    }
-  }
+    if (!toNotify.length) return;
+    sessionStorage.setItem(key, JSON.stringify([...notified, ...toNotify.map((a) => a.category)]));
+    supabase.from("notifications").insert(toNotify.map((a) => ({
+      user_id: user.id, type: "budget", title: `Budget exceeded: ${a.category}`,
+      body: `You've spent ${fmt(a.spent)} of a ${fmt(a.limit)} budget.`,
+    }))).then(() => { /* fire and forget */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exceededKey, user?.id]);
+
+  if (alerts.length === 0) return null;
 
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2">
@@ -319,11 +323,7 @@ function SavingsSection({ savings }: { savings: ReturnType<typeof useSavingsGoal
                 <div className="flex gap-2 pt-1">
                   <Button size="sm" variant="outline" onClick={() => contribute(g.id, Number(g.current_amount), 50)}>+50</Button>
                   <Button size="sm" variant="outline" onClick={() => contribute(g.id, Number(g.current_amount), 100)}>+100</Button>
-                  <Button size="sm" variant="ghost" onClick={() => {
-                    const v = window.prompt("Add amount", "");
-                    const n = Number(v);
-                    if (n) contribute(g.id, Number(g.current_amount), n);
-                  }}>Custom</Button>
+                  <CustomContributeButton onAdd={(n) => contribute(g.id, Number(g.current_amount), n)} />
                   {g.deadline && <span className="ml-auto self-center text-xs text-muted-foreground">by {format(parseISO(g.deadline), "MMM d, yyyy")}</span>}
                 </div>
               </li>
@@ -332,6 +332,33 @@ function SavingsSection({ savings }: { savings: ReturnType<typeof useSavingsGoal
         </ul>
       )}
     </div>
+  );
+}
+
+function CustomContributeButton({ onAdd }: { onAdd: (n: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [v, setV] = useState("");
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const n = Number(v);
+    if (!n || n <= 0) { toast.error("Enter a positive amount"); return; }
+    onAdd(n);
+    setV("");
+    setOpen(false);
+  }
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost">Custom</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle className="font-serif text-xl">Add contribution</DialogTitle></DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <Input type="number" step="0.01" min="0" placeholder="Amount" value={v} onChange={(e) => setV(e.target.value)} autoFocus required />
+          <Button type="submit" className="w-full">Add</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
 
