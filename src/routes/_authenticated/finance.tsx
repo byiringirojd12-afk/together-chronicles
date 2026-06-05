@@ -335,6 +335,33 @@ function SavingsSection({ savings }: { savings: ReturnType<typeof useSavingsGoal
   );
 }
 
+function CustomContributeButton({ onAdd }: { onAdd: (n: number) => void }) {
+  const [open, setOpen] = useState(false);
+  const [v, setV] = useState("");
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const n = Number(v);
+    if (!n || n <= 0) { toast.error("Enter a positive amount"); return; }
+    onAdd(n);
+    setV("");
+    setOpen(false);
+  }
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button size="sm" variant="ghost">Custom</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle className="font-serif text-xl">Add contribution</DialogTitle></DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <Input type="number" step="0.01" min="0" placeholder="Amount" value={v} onChange={(e) => setV(e.target.value)} autoFocus required />
+          <Button type="submit" className="w-full">Add</Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function BudgetSection({ budgets, categories }: { budgets: ReturnType<typeof useBudgets>["data"]; categories: string[] }) {
   const [cat, setCat] = useState(categories[0]);
   const [limit, setLimit] = useState("");
