@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus, TrendingDown, TrendingUp, Trash2, PiggyBank, AlertTriangle } from "lucide-react";
 import { format, startOfMonth, endOfMonth, subMonths, isSameMonth, parseISO } from "date-fns";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend } from "recharts";
