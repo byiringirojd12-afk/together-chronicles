@@ -323,11 +323,7 @@ function SavingsSection({ savings }: { savings: ReturnType<typeof useSavingsGoal
                 <div className="flex gap-2 pt-1">
                   <Button size="sm" variant="outline" onClick={() => contribute(g.id, Number(g.current_amount), 50)}>+50</Button>
                   <Button size="sm" variant="outline" onClick={() => contribute(g.id, Number(g.current_amount), 100)}>+100</Button>
-                  <Button size="sm" variant="ghost" onClick={() => {
-                    const v = window.prompt("Add amount", "");
-                    const n = Number(v);
-                    if (n) contribute(g.id, Number(g.current_amount), n);
-                  }}>Custom</Button>
+                  <CustomContributeButton onAdd={(n) => contribute(g.id, Number(g.current_amount), n)} />
                   {g.deadline && <span className="ml-auto self-center text-xs text-muted-foreground">by {format(parseISO(g.deadline), "MMM d, yyyy")}</span>}
                 </div>
               </li>
