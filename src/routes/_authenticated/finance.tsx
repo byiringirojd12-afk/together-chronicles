@@ -230,21 +230,25 @@ function BudgetAlerts({ thisMonth, budgets }: { thisMonth: ReturnType<typeof use
     const pct = (spent / Number(b.monthly_limit)) * 100;
     if (pct >= 80) alerts.push({ category: b.category, spent, limit: Number(b.monthly_limit), pct });
   }
-  if (alerts.length === 0) return null;
 
-  // best-effort: notify self once per category per session
-  if (typeof window !== "undefined" && user) {
+  // Best-effort: notify self once per category per month. Runs in an effect
+  // (never during render) so StrictMode double-renders don't double-insert.
+  const exceededKey = alerts.filter((a) => a.pct >= 100).map((a) => a.category).sort().join(",");
+  useEffect(() => {
+    if (typeof window === "undefined" || !user || !exceededKey) return;
     const key = `tp_budget_notified_${new Date().toISOString().slice(0, 7)}_${user.id}`;
     const notified: string[] = JSON.parse(sessionStorage.getItem(key) || "[]");
     const toNotify = alerts.filter((a) => a.pct >= 100 && !notified.includes(a.category));
-    if (toNotify.length) {
-      sessionStorage.setItem(key, JSON.stringify([...notified, ...toNotify.map((a) => a.category)]));
-      supabase.from("notifications").insert(toNotify.map((a) => ({
-        user_id: user.id, type: "budget", title: `Budget exceeded: ${a.category}`,
-        body: `You've spent ${fmt(a.spent)} of a ${fmt(a.limit)} budget.`,
-      }))).then(() => {});
-    }
-  }
+    if (!toNotify.length) return;
+    sessionStorage.setItem(key, JSON.stringify([...notified, ...toNotify.map((a) => a.category)]));
+    supabase.from("notifications").insert(toNotify.map((a) => ({
+      user_id: user.id, type: "budget", title: `Budget exceeded: ${a.category}`,
+      body: `You've spent ${fmt(a.spent)} of a ${fmt(a.limit)} budget.`,
+    }))).then(() => { /* fire and forget */ });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exceededKey, user?.id]);
+
+  if (alerts.length === 0) return null;
 
   return (
     <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2">
