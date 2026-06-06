@@ -87,7 +87,7 @@ export function useLiveLocations() {
 
   useEffect(() => {
     if (!coupleId) return;
-    const ch = supabase.channel(`loc:${coupleId}`)
+    const ch = supabase.channel(`loc:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "locations", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["locations", coupleId] }))
       .subscribe();
@@ -118,7 +118,7 @@ export function useSavedPlaces() {
 
   useEffect(() => {
     if (!coupleId) return;
-    const ch = supabase.channel(`places:${coupleId}`)
+    const ch = supabase.channel(`places:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "saved_places", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["saved-places", coupleId] }))
       .subscribe();
@@ -241,7 +241,7 @@ export function useLocationEvents(limit = 20) {
 
   useEffect(() => {
     if (!coupleId) return;
-    const ch = supabase.channel(`evt:${coupleId}`)
+    const ch = supabase.channel(`evt:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "location_events", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["location-events", coupleId, limit] }))
       .subscribe();

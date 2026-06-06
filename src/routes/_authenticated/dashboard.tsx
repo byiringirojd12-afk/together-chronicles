@@ -55,7 +55,7 @@ function Dashboard() {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`dashboard:${coupleId}`)
+      .channel(`dashboard:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "memories", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["dashboard-counts", coupleId] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `couple_id=eq.${coupleId}` },
