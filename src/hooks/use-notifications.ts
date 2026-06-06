@@ -50,7 +50,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(`notifications:${user.id}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` }, () => {
         qc.invalidateQueries({ queryKey: ["notifications", user.id] });
       })
@@ -102,7 +102,7 @@ export function useReminders() {
   useEffect(() => {
     if (!coupleId) return;
     const channel = supabase
-      .channel(`reminders:${coupleId}`)
+      .channel(`reminders:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "reminders", filter: `couple_id=eq.${coupleId}` }, () => {
         qc.invalidateQueries({ queryKey: ["reminders", coupleId] });
       })
