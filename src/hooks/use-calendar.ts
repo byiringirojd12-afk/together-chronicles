@@ -47,7 +47,7 @@ export function useCalendarEvents(rangeStart?: Date, rangeEnd?: Date) {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`cal:${coupleId}`)
+      .channel(`cal:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "calendar_events", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["calendar", coupleId] }))
       .subscribe();

@@ -61,7 +61,7 @@ export function useTransactions() {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`finance-tx:${coupleId}`)
+      .channel(`finance-tx:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "finance_transactions", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["finance-tx", coupleId] }))
       .subscribe();
@@ -124,7 +124,7 @@ export function useSavingsGoals() {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`sg:${coupleId}`)
+      .channel(`sg:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "savings_goals", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["savings-goals", coupleId] }))
       .subscribe();
@@ -152,7 +152,7 @@ export function useBudgets() {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`bg:${coupleId}`)
+      .channel(`bg:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "budgets", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["budgets", coupleId] }))
       .subscribe();

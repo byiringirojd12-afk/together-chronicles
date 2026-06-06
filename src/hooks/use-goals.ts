@@ -46,7 +46,7 @@ export function useGoals() {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`goals:${coupleId}`)
+      .channel(`goals:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "goals", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["goals", coupleId] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "goal_milestones", filter: `couple_id=eq.${coupleId}` },

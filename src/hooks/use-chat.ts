@@ -40,7 +40,7 @@ export function useChat() {
   // Realtime + presence + typing
   useEffect(() => {
     if (!coupleId || !user) return;
-    const ch = supabase.channel(`chat:${coupleId}`, { config: { presence: { key: user.id } } });
+    const ch = supabase.channel(`chat:${coupleId}:${Math.random().toString(36).slice(2)}`, { config: { presence: { key: user.id } } });
     channelRef.current = ch;
 
     ch.on("postgres_changes",
@@ -134,7 +134,7 @@ export function useUnreadCount() {
 
   useEffect(() => {
     if (!coupleId) return;
-    const ch = supabase.channel(`unread:${coupleId}`)
+    const ch = supabase.channel(`unread:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "messages", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["unread-messages", coupleId, user?.id] }))
       .subscribe();
