@@ -4,7 +4,7 @@
 //  - StaleWhileRevalidate-ish for same-origin static assets
 //  - Handles Web Push events and notification clicks
 
-const CACHE_VERSION = "togetherplus-v1";
+const CACHE_VERSION = "togetherplus-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const OFFLINE_URL = "/offline.html";
 
@@ -53,8 +53,27 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets — try cache, then network, then cache the response.
-  if (/\.(?:js|css|woff2?|ttf|png|jpg|jpeg|svg|webp|ico)$/.test(url.pathname)) {
+  // JS/CSS — network-first so a redeploy (new hashed chunk URLs) never serves
+  // a stale "module not found" from cache. Fall back to cache only when offline.
+  if (/\.(?:js|mjs|css)$/.test(url.pathname) || url.pathname.startsWith("/@") || url.pathname.startsWith("/_build/")) {
+    event.respondWith((async () => {
+      try {
+        const fresh = await fetch(req);
+        if (fresh && fresh.status === 200) {
+          const cache = await caches.open(STATIC_CACHE);
+          cache.put(req, fresh.clone());
+        }
+        return fresh;
+      } catch {
+        const cached = await caches.match(req);
+        return cached || Response.error();
+      }
+    })());
+    return;
+  }
+
+  // Fonts/images — cache-first (these are content-hashed or rarely change).
+  if (/\.(?:woff2?|ttf|png|jpg|jpeg|svg|webp|ico)$/.test(url.pathname)) {
     event.respondWith((async () => {
       const cached = await caches.match(req);
       if (cached) return cached;
