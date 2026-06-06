@@ -52,7 +52,7 @@ export function useMemories() {
   useEffect(() => {
     if (!coupleId) return;
     const ch = supabase
-      .channel(`memories-room:${coupleId}`)
+      .channel(`memories-room:${coupleId}:${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "memories", filter: `couple_id=eq.${coupleId}` },
         () => qc.invalidateQueries({ queryKey: ["memories", coupleId] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "memory_favorites", filter: `couple_id=eq.${coupleId}` },
