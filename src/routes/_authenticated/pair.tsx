@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Copy, Heart, Loader2 } from "lucide-react";
+import { ArrowRight, Copy, Heart, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, useCouple, usePartner } from "@/hooks/use-profile";
 import { useAuth } from "@/hooks/use-auth";
@@ -77,6 +77,9 @@ function PairPage() {
           {couple.anniversary_date && (
             <p className="text-sm text-muted-foreground mt-2">Anniversary: {new Date(couple.anniversary_date).toLocaleDateString()}</p>
           )}
+          <Button className="mt-6" onClick={() => navigate({ to: "/dashboard" })}>
+            Enter your sanctuary <ArrowRight className="size-4 ml-1" />
+          </Button>
         </div>
       </div>
     );
@@ -92,6 +95,9 @@ function PairPage() {
           <button onClick={copyCode} className="inline-flex items-center gap-3 px-6 py-4 rounded-xl bg-secondary text-secondary-foreground font-mono text-2xl tracking-[0.3em] hover:bg-secondary/80 transition-colors">
             {profile.invite_code} <Copy className="size-4" />
           </button>
+          <p className="text-xs text-muted-foreground mt-6 flex items-center justify-center gap-2">
+            <Loader2 className="size-3 animate-spin" /> Waiting for your partner to join…
+          </p>
         </div>
       </div>
     );
