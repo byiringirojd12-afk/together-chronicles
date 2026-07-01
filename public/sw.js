@@ -13,7 +13,7 @@ self.addEventListener("install", (event) => {
     (async () => {
       const cache = await caches.open(STATIC_CACHE);
       // Cache each entry individually so a single 404 (e.g. SSR-only path) doesn't abort the whole install.
-      await Promise.all([OFFLINE_URL, "/manifest.webmanifest"].map(async (url) => {
+      await Promise.all([OFFLINE_URL, "/manifest.json"].map(async (url) => {
         try {
           const res = await fetch(url, { cache: "reload" });
           if (res && res.ok) await cache.put(url, res.clone());
