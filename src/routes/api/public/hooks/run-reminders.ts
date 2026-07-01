@@ -18,13 +18,17 @@ export const Route = createFileRoute("/api/public/hooks/run-reminders")({
 });
 
 function isAuthorized(request: Request): boolean {
-  const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_ANON_KEY ?? "";
+  const expected = process.env.CRON_SECRET ?? "";
   if (!expected) return false;
   const provided =
-    request.headers.get("apikey") ??
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+    request.headers.get("x-cron-secret") ??
     "";
-  return provided === expected;
+  if (provided.length !== expected.length) return false;
+  // constant-time compare
+  let mismatch = 0;
+  for (let i = 0; i < expected.length; i++) mismatch |= provided.charCodeAt(i) ^ expected.charCodeAt(i);
+  return mismatch === 0;
 }
 
 async function handle({ request }: { request: Request }) {
