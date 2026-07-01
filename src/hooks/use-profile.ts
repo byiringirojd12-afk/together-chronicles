@@ -48,6 +48,7 @@ export function usePartner(coupleId: string | null | undefined, selfId: string |
   return useQuery({
     queryKey: ["partner", coupleId, selfId],
     enabled: !!coupleId && !!selfId,
+    refetchInterval: (q) => (q.state.data ? false : 5000),
     queryFn: async (): Promise<Profile | null> => {
       if (!coupleId || !selfId) return null;
       const { data, error } = await supabase.from("profiles").select("*").eq("couple_id", coupleId).neq("id", selfId).maybeSingle();
