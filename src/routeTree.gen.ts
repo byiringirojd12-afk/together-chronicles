@@ -29,6 +29,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as AuthenticatedMemoriesIndexRouteImport } from './routes/_authenticated/memories.index'
 import { Route as AuthenticatedMemoriesIdRouteImport } from './routes/_authenticated/memories.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicHooksRunRemindersRouteImport } from './routes/api/public/hooks/run-reminders'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -135,6 +136,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksRunRemindersRoute =
   ApiPublicHooksRunRemindersRouteImport.update({
     id: '/api/public/hooks/run-reminders',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/pair': typeof AuthenticatedPairRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/memories/$id': typeof AuthenticatedMemoriesIdRoute
   '/memories/': typeof AuthenticatedMemoriesIndexRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/pair': typeof AuthenticatedPairRoute
   '/reminders': typeof AuthenticatedRemindersRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/memories/$id': typeof AuthenticatedMemoriesIdRoute
   '/memories': typeof AuthenticatedMemoriesIndexRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/pair': typeof AuthenticatedPairRoute
   '/_authenticated/reminders': typeof AuthenticatedRemindersRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/memories/$id': typeof AuthenticatedMemoriesIdRoute
   '/_authenticated/memories/': typeof AuthenticatedMemoriesIndexRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/pair'
     | '/reminders'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/memories/$id'
     | '/memories/'
@@ -251,6 +261,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/pair'
     | '/reminders'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/memories/$id'
     | '/memories'
@@ -274,6 +285,7 @@ export interface FileRouteTypes {
     | '/_authenticated/notifications'
     | '/_authenticated/pair'
     | '/_authenticated/reminders'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/memories/$id'
     | '/_authenticated/memories/'
@@ -289,6 +301,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicHooksRunRemindersRoute: typeof ApiPublicHooksRunRemindersRoute
 }
@@ -435,6 +448,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/run-reminders': {
       id: '/api/public/hooks/run-reminders'
       path: '/api/public/hooks/run-reminders'
@@ -487,6 +507,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicHooksRunRemindersRoute: ApiPublicHooksRunRemindersRoute,
 }
