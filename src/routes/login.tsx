@@ -72,7 +72,9 @@ function LoginPage() {
   }
 
   async function googleSignIn() {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + nextPath });
+    // redirect_uri must be a public same-origin URL — never a protected route.
+    // The intended destination is preserved via `nextPath` and the post-auth effect above.
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (result.error) toast.error(result.error.message || "Google sign-in failed");
   }
 
